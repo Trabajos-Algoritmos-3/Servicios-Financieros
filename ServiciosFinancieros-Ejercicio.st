@@ -128,9 +128,8 @@ Object subclass: #AccountTransaction
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Ejercicio'!
 
-!AccountTransaction methodsFor: 'value' stamp: 'HernanWilkinson 9/12/2011 12:25'!
+!AccountTransaction methodsFor: 'value' stamp: 'fran 7/5/2021 19:20:59'!
 value 
-
 	self subclassResponsibility ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -185,14 +184,16 @@ register: aValue on: account
 
 !classDefinition: #Transfer category: 'ServiciosFinancieros-Ejercicio'!
 AccountTransaction subclass: #Transfer
-	instanceVariableNames: 'value'
+	instanceVariableNames: 'value accountSender accountReceiver'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Ejercicio'!
 
-!Transfer methodsFor: 'as yet unclassified' stamp: 'fran 7/2/2021 23:44:03'!
-initializeFor: aValue
-	value _ aValue.! !
+!Transfer methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 20:48:35'!
+initializefrom: sender to: receiver for: aValue
+	value _ aValue.
+	accountSender _ sender.
+	accountReceiver _ receiver.! !
 
 
 !Transfer methodsFor: 'value' stamp: 'fran 7/2/2021 22:47:18'!
@@ -205,16 +206,16 @@ value
 Transfer class
 	instanceVariableNames: ''!
 
-!Transfer class methodsFor: 'as yet unclassified' stamp: 'fran 7/2/2021 23:42:51'!
-for: aValue
-	^ self new initializeFor: aValue ! !
+!Transfer class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 20:46:29'!
+from: accountSender to: accountReceiver for: aValue
+	^ self new initializefrom: accountSender to: accountReceiver for: aValue.! !
 
-!Transfer class methodsFor: 'as yet unclassified' stamp: 'fran 7/2/2021 23:43:29'!
+!Transfer class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 20:44:30'!
 from: accountSender to: accountReciver theAmountOf: aValue
 	
 	|transfer|
 	
-	transfer _ self for: aValue.
+	transfer _ self from: accountSender to: accountReciver for: aValue.
 	
 	accountSender registerWithdraw: transfer.
 	accountReciver registerDeposit: transfer.
@@ -258,6 +259,84 @@ register: aValue on: account
 	account registerWithdraw: transaction.
 		
 	^ transaction! !
+
+
+!classDefinition: #AccountsTransferences category: 'ServiciosFinancieros-Ejercicio'!
+Object subclass: #AccountsTransferences
+	instanceVariableNames: 'sender receiver'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Ejercicio'!
+
+!AccountsTransferences methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:19:44'!
+value
+	self subclassResponsibility.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AccountsTransferences class' category: 'ServiciosFinancieros-Ejercicio'!
+AccountsTransferences class
+	instanceVariableNames: ''!
+
+!AccountsTransferences class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:33:28'!
+from: accountSender to: accountReceiver for: aValue
+	|transferSender transferReceiver|
+	
+	transferSender _	TransferSender createWith: aValue .
+	transferReceiver _ TransferReceiver createWith: aValue.
+	
+	transferSender xxx: transferReceiver.
+	transferReceiver xxx: transferSender.
+	
+	accountSender registerWithdraw: transferSender.
+	accountReceiver registerDeposit: transferReceiver.
+	
+	
+	! !
+
+
+!classDefinition: #TransferReceiver category: 'ServiciosFinancieros-Ejercicio'!
+AccountsTransferences subclass: #TransferReceiver
+	instanceVariableNames: 'value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Ejercicio'!
+
+!TransferReceiver methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:20:21'!
+value
+	^ value.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferReceiver class' category: 'ServiciosFinancieros-Ejercicio'!
+TransferReceiver class
+	instanceVariableNames: ''!
+
+!TransferReceiver class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:34:40'!
+createWith: aValue
+	^ self new initializeFor: aValue.! !
+
+
+!classDefinition: #TransferSender category: 'ServiciosFinancieros-Ejercicio'!
+AccountsTransferences subclass: #TransferSender
+	instanceVariableNames: 'value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Ejercicio'!
+
+!TransferSender methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:20:30'!
+value
+	^value.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferSender class' category: 'ServiciosFinancieros-Ejercicio'!
+TransferSender class
+	instanceVariableNames: ''!
+
+!TransferSender class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:34:46'!
+createWith: aValue
+	^ self new initializeFor: aValue.! !
 
 
 !classDefinition: #ReceptiveAccount category: 'ServiciosFinancieros-Ejercicio'!
