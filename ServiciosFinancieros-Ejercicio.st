@@ -88,7 +88,7 @@ test07AccountKnowsItsTransactions
 	self assert: (account transactions includes: deposit).
 ! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'fran 7/2/2021 22:33:17'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'ff 7/6/2021 13:53:54'!
 test08ReceptiveAccountCanMakeATransactionToAnotherReceptiveAccount
 
 	| fromAccount toAccount |
@@ -97,13 +97,13 @@ test08ReceptiveAccountCanMakeATransactionToAnotherReceptiveAccount
 	toAccount := ReceptiveAccount new.
 	
 	Deposit register: 100 * peso on: fromAccount.
-	Transfer from: fromAccount to: toAccount theAmountOf: 100 * peso.
+	AccountsTransferences from: fromAccount to: toAccount for: 100 * peso.
 	
 	self assert: 0 equals: fromAccount balance.
 	self assert: 100 * peso equals: toAccount balance.
 ! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'fran 7/2/2021 22:56:09'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'fran 7/7/2021 22:53:51'!
 test09BothReceptivesAccountsKnowRegisteredTransferences
 
 	| transfer fromAccount toAccount |
@@ -112,13 +112,181 @@ test09BothReceptivesAccountsKnowRegisteredTransferences
 	toAccount _ ReceptiveAccount new.
 	
 	Deposit register: 100 * peso on: fromAccount.
-	transfer _ Transfer from: fromAccount to: toAccount theAmountOf: 100 * peso.
+	transfer _ AccountsTransferences from: fromAccount to: toAccount for: 100 * peso.
 	
 	self assert: (fromAccount hasRegistered: transfer).
 	self assert: (toAccount hasRegistered: transfer).
 	
 	
 ! !
+
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'ff 7/6/2021 14:10:04'!
+test01PortfolioCanBeEmpty
+
+	|portfolio|
+	portfolio _ Portfolio new.
+	
+	self assert: portfolio balance equals: 0 * peso.
+	! !
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'ff 7/6/2021 14:21:50'!
+test02PortfolioCanCalculateBalanceOfMultipleAccounts
+
+	|portfolio fedeAccount franAccount|
+	portfolio _ Portfolio new.
+	
+	fedeAccount _ ReceptiveAccount new.
+	franAccount _ ReceptiveAccount new.	
+	
+	portfolio add: fedeAccount.
+	portfolio add: franAccount.
+	
+	Deposit register: 100 * peso on: fedeAccount.
+	Deposit register: 200 * peso on: franAccount.
+	
+	self assert: portfolio balance equals: 300 * peso.
+	! !
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'ff 7/6/2021 14:34:59'!
+test03
+
+	|portfolio fedeAccount franAccount deposit|
+	portfolio _ Portfolio new.
+	
+	fedeAccount _ ReceptiveAccount new.
+	franAccount _ ReceptiveAccount new.	
+	
+	portfolio add: fedeAccount.
+	portfolio add: franAccount.
+	
+	deposit _ Deposit register: 100 * peso on: fedeAccount.
+	
+	self assert: (portfolio hasRegistered: deposit) equals: true.
+	! !
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'ff 7/6/2021 14:48:13'!
+test04
+
+	|portfolio fedeAccount franAccount deposit100 deposit50 deposit10 fedeTransactions|
+	portfolio _ Portfolio new.
+	fedeAccount _ ReceptiveAccount new.
+	franAccount _ ReceptiveAccount new.	
+	
+	portfolio add: fedeAccount.
+	portfolio add: franAccount.
+	
+	deposit100 _ Deposit register: 100 * peso on: fedeAccount.
+	deposit50 _ Deposit register: 50 * peso on: fedeAccount.
+	deposit10 _ Deposit register: 10 * peso on: franAccount.
+	
+	fedeTransactions _ portfolio transactions: fedeAccount.
+	self assert: (fedeTransactions includes: deposit100) equals: true.
+	self assert: (fedeTransactions includes: deposit50) equals: true.
+	self assert: (fedeTransactions includes: deposit10) equals: false.
+	! !
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'ff 7/6/2021 14:50:43'!
+test05
+
+	|portfolio1 portfolio2 fedeAccount franAccount|
+	
+	portfolio1 _ Portfolio new.
+	portfolio2 _ Portfolio new.
+	fedeAccount _ ReceptiveAccount new.
+	franAccount _ ReceptiveAccount new.	
+	
+	portfolio1 add: fedeAccount.
+	portfolio1 add: franAccount.
+	
+	Deposit register: 100 * peso on: fedeAccount.
+	Deposit register: 50 * peso on: fedeAccount.
+	Deposit register: 10 * peso on: franAccount.
+	
+	portfolio2 add: portfolio1.
+	
+	self assert: portfolio2 balance equals: 160 * peso.
+	
+	
+	! !
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'ff 7/6/2021 14:52:26'!
+test06
+
+	|portfolio1 portfolio2 fedeAccount franAccount deposit|
+	
+	portfolio1 _ Portfolio new.
+	portfolio2 _ Portfolio new.
+	fedeAccount _ ReceptiveAccount new.
+	franAccount _ ReceptiveAccount new.	
+	
+	portfolio1 add: fedeAccount.
+	portfolio1 add: franAccount.
+	
+	deposit _ Deposit register: 100 * peso on: fedeAccount.
+	
+	portfolio2 add: portfolio1.
+	
+	self assert: (portfolio2 hasRegistered: deposit) equals: true.
+	
+	
+	! !
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'fran 7/7/2021 22:47:02'!
+test07
+
+	|portfolio1 portfolio2 fedeAccount franAccount deposit10 deposit100 deposit50 fedeTransactions |
+	
+	portfolio1 _ Portfolio new.
+	portfolio2 _ Portfolio new.
+	fedeAccount _ ReceptiveAccount new.
+	franAccount _ ReceptiveAccount new.	
+	
+	portfolio1 add: fedeAccount.
+	portfolio1 add: franAccount.
+	portfolio2 add: portfolio1.
+	
+	deposit100 _ Deposit register: 100 * peso on: fedeAccount.
+	deposit50 _ Deposit register: 50 * peso on: fedeAccount.
+	deposit10 _ Deposit register: 10 * peso on: franAccount.
+	
+	fedeTransactions _ portfolio2 transactions: fedeAccount.
+	self assert: (fedeTransactions includes: deposit100) equals: true.
+	self assert: (fedeTransactions includes: deposit50) equals: true.
+	self assert: (fedeTransactions includes: deposit10) equals: false.
+	
+	
+	
+	
+	! !
+
+!ReceptiveAccountTest methodsFor: 'portfolioTest' stamp: 'fran 7/7/2021 22:50:13'!
+test08
+
+	|portfolio1 portfolio2 fedeAccount franAccount deposit10 deposit100 deposit50 portfolio1Transactions |
+	
+	portfolio1 _ Portfolio new.
+	portfolio2 _ Portfolio new.
+	fedeAccount _ ReceptiveAccount new.
+	franAccount _ ReceptiveAccount new.	
+	
+	portfolio1 add: fedeAccount.
+	portfolio1 add: franAccount.
+	portfolio2 add: portfolio1.
+	
+	deposit100 _ Deposit register: 100 * peso on: fedeAccount.
+	deposit50 _ Deposit register: 50 * peso on: fedeAccount.
+	deposit10 _ Deposit register: 10 * peso on: franAccount.
+	
+	portfolio1Transactions _ portfolio2 transactions: portfolio1.
+	self assert: (portfolio1Transactions includes: deposit100) equals: true.
+	self assert: (portfolio1Transactions includes: deposit50) equals: true.
+	self assert: (portfolio1Transactions includes: deposit10) equals: true.
+	
+	
+	
+	
+	! !
 
 
 !classDefinition: #AccountTransaction category: 'ServiciosFinancieros-Ejercicio'!
@@ -182,47 +350,6 @@ register: aValue on: account
 	^ transaction! !
 
 
-!classDefinition: #Transfer category: 'ServiciosFinancieros-Ejercicio'!
-AccountTransaction subclass: #Transfer
-	instanceVariableNames: 'value accountSender accountReceiver'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ServiciosFinancieros-Ejercicio'!
-
-!Transfer methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 20:48:35'!
-initializefrom: sender to: receiver for: aValue
-	value _ aValue.
-	accountSender _ sender.
-	accountReceiver _ receiver.! !
-
-
-!Transfer methodsFor: 'value' stamp: 'fran 7/2/2021 22:47:18'!
-value
-	^ value.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Transfer class' category: 'ServiciosFinancieros-Ejercicio'!
-Transfer class
-	instanceVariableNames: ''!
-
-!Transfer class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 20:46:29'!
-from: accountSender to: accountReceiver for: aValue
-	^ self new initializefrom: accountSender to: accountReceiver for: aValue.! !
-
-!Transfer class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 20:44:30'!
-from: accountSender to: accountReciver theAmountOf: aValue
-	
-	|transfer|
-	
-	transfer _ self from: accountSender to: accountReciver for: aValue.
-	
-	accountSender registerWithdraw: transfer.
-	accountReciver registerDeposit: transfer.
-	
-	^ transfer.! !
-
-
 !classDefinition: #Withdraw category: 'ServiciosFinancieros-Ejercicio'!
 AccountTransaction subclass: #Withdraw
 	instanceVariableNames: 'value'
@@ -268,6 +395,11 @@ Object subclass: #AccountsTransferences
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Ejercicio'!
 
+!AccountsTransferences methodsFor: 'as yet unclassified' stamp: 'fran 7/7/2021 23:06:52'!
+initializeWith
+	sender _ TransferSender new.
+	receiver _ TransferReceiver  new.! !
+
 !AccountsTransferences methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:19:44'!
 value
 	self subclassResponsibility.! !
@@ -278,11 +410,14 @@ value
 AccountsTransferences class
 	instanceVariableNames: ''!
 
-!AccountsTransferences class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:33:28'!
+!AccountsTransferences class methodsFor: 'as yet unclassified' stamp: 'fran 7/7/2021 23:09:40'!
 from: accountSender to: accountReceiver for: aValue
-	|transferSender transferReceiver|
+	|transferSender transferReceiver transfer|
+	transfer _ self new initializeWith.
+	transfer register: aValue.
 	
-	transferSender _	TransferSender createWith: aValue .
+	
+	transferSender _	TransferSender createWith: aValue. 
 	transferReceiver _ TransferReceiver createWith: aValue.
 	
 	transferSender xxx: transferReceiver.
@@ -297,14 +432,22 @@ from: accountSender to: accountReceiver for: aValue
 
 !classDefinition: #TransferReceiver category: 'ServiciosFinancieros-Ejercicio'!
 AccountsTransferences subclass: #TransferReceiver
-	instanceVariableNames: 'value'
+	instanceVariableNames: 'value otherPart'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Ejercicio'!
 
+!TransferReceiver methodsFor: 'as yet unclassified' stamp: 'ff 7/6/2021 13:54:57'!
+initializeFor: aValue
+	value _ aValue.! !
+
 !TransferReceiver methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:20:21'!
 value
 	^ value.! !
+
+!TransferReceiver methodsFor: 'as yet unclassified' stamp: 'ff 7/6/2021 13:51:32'!
+xxx: otherHand
+	otherPart _ otherHand .! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -319,14 +462,22 @@ createWith: aValue
 
 !classDefinition: #TransferSender category: 'ServiciosFinancieros-Ejercicio'!
 AccountsTransferences subclass: #TransferSender
-	instanceVariableNames: 'value'
+	instanceVariableNames: 'value otherPart'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Ejercicio'!
 
+!TransferSender methodsFor: 'as yet unclassified' stamp: 'ff 7/6/2021 13:55:08'!
+initializeFor: aValue
+	value _ aValue.! !
+
 !TransferSender methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:20:30'!
 value
 	^value.! !
+
+!TransferSender methodsFor: 'as yet unclassified' stamp: 'ff 7/6/2021 13:51:49'!
+xxx: otherHand
+	otherPart _ otherHand .! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -337,6 +488,45 @@ TransferSender class
 !TransferSender class methodsFor: 'as yet unclassified' stamp: 'fran 7/5/2021 21:34:46'!
 createWith: aValue
 	^ self new initializeFor: aValue.! !
+
+
+!classDefinition: #Portfolio category: 'ServiciosFinancieros-Ejercicio'!
+Object subclass: #Portfolio
+	instanceVariableNames: 'linkedAccounts'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Ejercicio'!
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'ff 7/6/2021 14:18:47'!
+add: anAccount
+
+	linkedAccounts add: anAccount.! !
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'ff 7/6/2021 14:13:26'!
+balance
+	^linkedAccounts sum: [:anAccount | anAccount balance ] ifEmpty: [ 0 ].! !
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'ff 7/6/2021 14:38:03'!
+hasRegistered: aTransaccion
+	linkedAccounts do: [:anAccount | (anAccount hasRegistered: aTransaccion) ifTrue: [ ^true ] ].
+	^false.! !
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'fran 7/7/2021 22:47:20'!
+initialize
+	linkedAccounts _ OrderedCollection new.! !
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'fran 7/7/2021 22:49:32'!
+transactions
+	|allTransactions|
+	allTransactions _ OrderedCollection new.
+	linkedAccounts do: [:anAccount | allTransactions _ (allTransactions union: (anAccount transactions))].
+	^ allTransactions.! !
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'fran 7/7/2021 22:35:03'!
+transactions: anAccount
+	(linkedAccounts includes: anAccount) ifTrue:[ ^anAccount transactions].
+	linkedAccounts do: [:i | (i isKindOf: Portfolio) ifTrue: [^ i transactions: anAccount ] ].
+	! !
 
 
 !classDefinition: #ReceptiveAccount category: 'ServiciosFinancieros-Ejercicio'!
